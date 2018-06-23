@@ -1,5 +1,6 @@
 package com.example.prateek.smackchat.controller
 
+import Model.Channel
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -22,9 +23,11 @@ import com.example.prateek.smack.services.AuthService
 import com.example.prateek.smack.services.UserDataService
 import com.example.prateek.smackchat.R
 import io.socket.client.IO
+import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
+import services.MessageService
 import utilities.BROADCAST_USER_DATA_CHANGE
 import utilities.SOCKET_URL
 
@@ -37,7 +40,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-
+        socket.connect()
+        socket.on("channelCreated", onNewChannel)
 
         val toggle = ActionBarDrawerToggle(
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
@@ -50,19 +54,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(BROADCAST_USER_DATA_CHANGE))
-        socket.connect()
+
         super.onResume()
 
     }
 
-    override fun onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
-        super.onPause()
-
-    }
 
     override fun onDestroy() {
         socket.disconnect()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
+
         super.onDestroy()
     }
 
@@ -130,6 +131,23 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+    private val onNewChannel = Emitter.Listener {args ->
+        runOnUiThread {
+            val channelName = args[0] as String
+            val channelDesc = args[1] as String
+            val channelId = args[2] as String
+
+            val newChannel = Channel(channelName, channelDesc, channelId)
+            MessageService.channels.add(newChannel)
+
+            println(channelName as String)
+            println(channelDesc as String)
+            println(channelId as String)
+        }
+    }
+
+
 
     fun sendMessageBtnClicked(view: View) {
         hideKeyboard()
