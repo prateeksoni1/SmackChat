@@ -1,6 +1,7 @@
 package com.example.prateek.smack.services
 
 import android.graphics.Color
+import com.example.prateek.smackchat.controller.App
 import java.util.*
 
 object UserDataService {
@@ -17,9 +18,9 @@ object UserDataService {
         avatarColor = ""
         avatarName = ""
         email = ""
-        AuthService.authToken = ""
-        AuthService.userEmail = ""
-        AuthService.isLoggedIn = false
+        App.sharedPreferences.authToken = ""
+        App.sharedPreferences.userEmail = ""
+        App.sharedPreferences.isLoggedIn = false
     }
 
     fun returnAvatarColor(components: String) : Int {
